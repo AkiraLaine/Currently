@@ -7,12 +7,21 @@
       <span class='timezone'>{{ localTimezone }}</span>
     </div>
     <div class='container right'>
-      <span class='header'>Select an option</span>
-      <span class='time'>{{ selectedTime }}</span>
-      <span class='date'>{{ selectedDate }}</span>
-      <select class='selection' v-model='selectedTimezone'>
-        <option v-for='item in timezoneNames' :value='item'>{{ item }}</option>
-      </select>
+      <div class='content' ref='content'>
+        <span class='header'>Select an option</span>
+        <span class='time'>{{ selectedTime }}</span>
+        <span class='date'>{{ selectedDate }}</span>
+      </div>
+      <div class='dropdown' tabindex="0" @blur='dismissDropdown()'>
+        <div class='selected' @click='toggleDropdown()'>
+          <span class='text'>{{ selectedTimezone }}</span>
+          <span class='icon'>&#x25B2;</span>
+        </div>
+        <div v-show='dropdownExpanded' class='selection'>
+          <div class='overlay'></div>
+          <div class='item' v-for='item in timezoneNames' @click='selectItem(item)'>{{ item }}</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -31,7 +40,8 @@ export default {
       timezoneNames: moment.tz.names(),
       selectedTimezone: 'Africa/Abidjan',
       selectedTime: null,
-      selectedDate: null
+      selectedDate: null,
+      dropdownExpanded: false
     }
   },
   created () {
@@ -40,6 +50,21 @@ export default {
       this.selectedTime = moment.tz(this.selectedTimezone).format('HH:mm:ss')
       this.selectedDate = moment.tz(this.selectedTimezone).format('DD MMM YYYY')
     }, 1000)
+  },
+  methods: {
+    toggleDropdown () {
+      this.dropdownExpanded = true
+      this.$refs.content.style.filter = 'blur(5px)'
+    },
+    selectItem (item) {
+      this.selectedTimezone = item
+      this.dropdownExpanded = false
+      this.$refs.content.style.filter = 'blur(0)'
+    },
+    dismissDropdown () {
+      this.dropdownExpanded = false
+      this.$refs.content.style.filter = 'blur(0)'
+    }
   }
 }
 </script>
@@ -70,6 +95,11 @@ export default {
 .container.right {
   background: linear-gradient(to right, #403a3e, #be5869);
 }
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 .header {
   color: #eee;
   font-size: 1.5em;
@@ -83,7 +113,64 @@ export default {
 .date, .timezone {
   color: #eee;
 }
-.selection, .timezone {
+.dropdown, .timezone {
   margin-top: 10px;
+}
+.dropdown {
+  margin-top: 10px;
+  color: #eee;
+  border-bottom: 1px solid #eee;
+  padding: 10px;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+  min-width: 170px;
+  max-width: 170px;
+}
+.selected {
+  display: flex;
+  align-items: center;
+  letter-spacing: 2px;
+  justify-content: center;
+  width: 100%;
+}
+.text {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+.icon {
+  font-size: 0.5em;
+  color: #ddd;
+  margin-left: 10px;
+}
+.selection {
+  width: auto;
+  height: 300px;
+  background: transparent;
+  overflow-y: scroll;
+  background-color: rgba(255,255,255,0.6);
+  border: 3px solid #eee;
+  position: absolute;
+  top: -310px;
+  left: -25%;
+}
+.selection::-webkit-scrollbar {
+  width: 7px;
+}
+.selection::-webkit-scrollbar-track {
+  background: transparent;
+}
+.selection::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 10px;
+}
+.item {
+  padding: 10px;
+}
+.item:hover {
+  background-color: rgba(255,255,255,0.3)
 }
 </style>
