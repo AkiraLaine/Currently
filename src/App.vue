@@ -19,7 +19,7 @@
         </div>
         <input class='search' v-show='dropdownExpanded' v-model='query' type="text" placeholder="Search...">
         <div v-show='dropdownExpanded' class='selection'>
-          <div class='item' v-for='item in filteredList' @click='selectItem(item)'>{{ item }}</div>
+          <div class='item' v-for='item in filteredList' @click='selectItem(item.data)'>{{ item.label }}</div>
         </div>
       </div>
     </div>
@@ -37,7 +37,7 @@ export default {
       localTime: moment().local().format('HH:mm:ss'),
       localDate: moment().local().format('DD MMM YYYY'),
       localTimezone: `${moment.tz.guess()}, ${moment().local().format('Z')}`,
-      timezoneNames: moment.tz.names(),
+      momentList: moment.tz.names(),
       selectedTimezone: 'Africa/Abidjan',
       selectedTime: null,
       selectedDate: null,
@@ -52,14 +52,18 @@ export default {
       this.selectedDate = moment.tz(this.selectedTimezone).format('DD MMM YYYY')
     }, 1000)
 
-    this.timezoneNames = this.timezoneNames.map(tz => {
+    this.momentList = this.momentList.map(tz => {
+      let original = tz
       if (tz.indexOf('/') > -1) {
         tz = tz.split('/')
         tz = tz.splice(tz.length - 1, 1)
         tz = tz.join('')
       }
       tz = tz.replace('_', ' ')
-      return tz
+      return {
+        label: tz,
+        data: original
+      }
     })
   },
   methods: {
@@ -90,7 +94,7 @@ export default {
   },
   computed: {
     filteredList () {
-      return this.timezoneNames.filter(name => name.toLowerCase().indexOf(this.query.toLowerCase()) > -1)
+      return this.momentList.filter(item => item.label.toLowerCase().indexOf(this.query.toLowerCase()) > -1)
     }
   }
 }
