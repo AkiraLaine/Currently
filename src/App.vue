@@ -12,12 +12,12 @@
         <span class='time'>{{ selectedTime }}</span>
         <span class='date'>{{ selectedDate }}</span>
       </div>
-      <div class='dropdown' tabindex="0" @blur='dismissDropdown()'>
+      <div class='dropdown'>
         <div class='selected' @click='toggleDropdown()'>
           <span class='text'>{{ selectedTimezone }}</span>
           <span class='icon'>&#x25B2;</span>
         </div>
-        <input class='search' v-show='dropdownExpanded' v-model='query' type="text" placeholder="Search..." @focus='interceptBlur()'>
+        <input class='search' v-show='dropdownExpanded' v-model='query' type="text" placeholder="Search...">
         <div v-show='dropdownExpanded' class='selection'>
           <div class='item' v-for='item in filteredList' @click='selectItem(item)'>{{ item }}</div>
         </div>
@@ -76,6 +76,17 @@ export default {
       this.dropdownExpanded = false
       this.$refs.content.style.filter = 'blur(0)'
     }
+  },
+  mounted () {
+    window.addEventListener('click', e => {
+      if (e.target.className.indexOf('search') === -1 &&
+        e.target.className.indexOf('text') === -1 &&
+        e.target.className.indexOf('icon') === -1 &&
+        e.target.className.indexOf('dropdown') === -1 &&
+        e.target.className.indexOf('selected') === -1) {
+        this.dismissDropdown()
+      }
+    })
   },
   computed: {
     filteredList () {
