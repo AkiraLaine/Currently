@@ -17,9 +17,9 @@
           <span class='text'>{{ selectedTimezone }}</span>
           <span class='icon'>&#x25B2;</span>
         </div>
+        <input class='search' v-show='dropdownExpanded' v-model='query' type="text" placeholder="Search..." @focus='interceptBlur()'>
         <div v-show='dropdownExpanded' class='selection'>
-          <div class='overlay'></div>
-          <div class='item' v-for='item in timezoneNames' @click='selectItem(item)'>{{ item }}</div>
+          <div class='item' v-for='item in filteredList' @click='selectItem(item)'>{{ item }}</div>
         </div>
       </div>
     </div>
@@ -41,7 +41,8 @@ export default {
       selectedTimezone: 'Africa/Abidjan',
       selectedTime: null,
       selectedDate: null,
-      dropdownExpanded: false
+      dropdownExpanded: false,
+      query: ''
     }
   },
   created () {
@@ -50,6 +51,16 @@ export default {
       this.selectedTime = moment.tz(this.selectedTimezone).format('HH:mm:ss')
       this.selectedDate = moment.tz(this.selectedTimezone).format('DD MMM YYYY')
     }, 1000)
+
+    this.timezoneNames = this.timezoneNames.map(tz => {
+      if (tz.indexOf('/') > -1) {
+        tz = tz.split('/')
+        tz = tz.splice(tz.length - 1, 1)
+        tz = tz.join('')
+      }
+      tz = tz.replace('_', ' ')
+      return tz
+    })
   },
   methods: {
     toggleDropdown () {
@@ -58,12 +69,17 @@ export default {
     },
     selectItem (item) {
       this.selectedTimezone = item
-      this.dropdownExpanded = false
-      this.$refs.content.style.filter = 'blur(0)'
+      this.dismissDropdown()
+      this.query = ''
     },
     dismissDropdown () {
       this.dropdownExpanded = false
       this.$refs.content.style.filter = 'blur(0)'
+    }
+  },
+  computed: {
+    filteredList () {
+      return this.timezoneNames.filter(name => name.toLowerCase().indexOf(this.query.toLowerCase()) > -1)
     }
   }
 }
@@ -146,16 +162,36 @@ export default {
   color: #ddd;
   margin-left: 10px;
 }
+.search {
+  top: -345px;
+  position: absolute;
+  width: 246px;
+  left: -30px;
+  background: none;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.6);
+  padding: 10px;
+  box-sizing: border-box;
+  color: #eee;
+  border-top: 3px solid #eee;
+  border-right: 3px solid #eee;
+  border-left: 3px solid #eee;
+}
+.search::placeholder {
+  color: #fff;
+}
 .selection {
-  width: auto;
+  width: 240px;
   height: 300px;
-  background: transparent;
   overflow-y: scroll;
   background-color: rgba(255,255,255,0.6);
-  border: 3px solid #eee;
+  border-right: 3px solid #eee;
+  border-bottom: 3px solid #eee;
+  border-left: 3px solid #eee;
   position: absolute;
   top: -310px;
-  left: -25%;
+  left: -30px;
 }
 .selection::-webkit-scrollbar {
   width: 7px;
